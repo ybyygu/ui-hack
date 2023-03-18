@@ -17,7 +17,16 @@ pub struct TemplateApp {
     // Example stuff:
     label: String,
 
+    title: String,
+
     radio: Enum,
+
+    charge: isize,
+
+    multiplicity: usize,
+
+    // functional, basis set etc.
+    theory: String,
 
     // this how you opt-out of serialization of a member
     #[serde(skip)]
@@ -27,10 +36,13 @@ pub struct TemplateApp {
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            // Example stuff:
             label: "Hello World!".to_owned(),
             value: 2.7,
             radio: Enum::First,
+            title: String::new(),
+            charge: 0,
+            multiplicity: 1,
+            theory: String::new(),
         }
     }
 }
@@ -64,7 +76,16 @@ impl eframe::App for TemplateApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let Self { label, value, radio } = self;
+        let Self {
+            label,
+            value,
+            radio,
+            title,
+            charge,
+            multiplicity,
+            theory,
+            ..
+        } = self;
 
         // Examples of how to create different panels and windows.
         // Pick whichever suits you.
@@ -84,8 +105,6 @@ impl eframe::App for TemplateApp {
                 *value += 1.0;
             }
 
-            ui.add(egui::Label::new("test"));
-
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 0.0;
@@ -98,34 +117,43 @@ impl eframe::App for TemplateApp {
             });
         });
 
+        // The central panel the region left after adding TopPanel's and SidePanel's
         egui::CentralPanel::default().show(ctx, |ui| {
-            // The central panel the region left after adding TopPanel's and SidePanel's
+            ui.heading("ORCA input");
 
-            egui::ComboBox::from_label("Select one!")
-                .selected_text(format!("{:?}", radio))
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(radio, Enum::First, "First");
-                    ui.selectable_value(radio, Enum::Second, "Second");
-                    ui.selectable_value(radio, Enum::Third, "Third");
+            // 格线对齐
+            egui::Grid::new("my_grid")
+                .num_columns(2)
+                .spacing([40.0, 4.0])
+                .striped(true)
+                .show(ui, |ui| {
+                    ui.label("Title:");
+                    ui.add(egui::TextEdit::singleline(title).hint_text("Geom optim"));
+                    ui.end_row();
+                    ui.label("Calculation Type:");
+                    egui::ComboBox::from_label("")
+                        .selected_text(format!("{:?}", radio))
+                        .show_ui(ui, |ui| {
+                            ui.selectable_value(radio, Enum::First, "Single Point");
+                            ui.selectable_value(radio, Enum::Second, "Geometry Optimization");
+                            ui.selectable_value(radio, Enum::Third, "Frequencies");
+                        });
+                    ui.end_row();
+                    ui.label("Charge:");
+                    ui.add(egui::DragValue::new(charge).speed(1.0));
+                    ui.end_row();
+                    ui.label("Multiplicity:");
+                    ui.add(egui::DragValue::new(multiplicity).speed(1.0));
+                    ui.end_row();
+                    ui.label("Theory:");
+                    ui.add(egui::TextEdit::singleline(theory).hint_text("B3LYP Def2-SVP"));
+                    ui.end_row();
+                    ui.label("RI approximation:");
                 });
 
-            ui.heading("eframe template di");
-            ui.hyperlink("https://github.com/emilk/eframe_template");
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/eframe_template/blob/master/",
-                "Source code."
-            ));
-            egui::warn_if_debug_build(ui);
+            ui.separator();
+            ui.end_row();
         });
-
-        if true {
-            egui::Window::new("Window").show(ctx, |ui| {
-                ui.label("Windows can be moved by dragging them.");
-                ui.label("They are automatically sized based on contents.");
-                ui.label("You can turn on resizing and scrolling if you like.");
-                ui.label("You would normally choose either panels OR windows.");
-            });
-        }
     }
 }
 // 5a6d6884 ends here
