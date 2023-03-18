@@ -1,3 +1,8 @@
+// [[file:../ui-hack.note::*imports][imports:1]]
+
+// imports:1 ends here
+
+// [[file:../ui-hack.note::9a0316a5][9a0316a5]]
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
@@ -19,7 +24,9 @@ impl Default for TemplateApp {
         }
     }
 }
+// 9a0316a5 ends here
 
+// [[file:../ui-hack.note::e67677fe][e67677fe]]
 impl TemplateApp {
     /// Called once before the first frame.
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
@@ -35,7 +42,9 @@ impl TemplateApp {
         Default::default()
     }
 }
+// e67677fe ends here
 
+// [[file:../ui-hack.note::5a6d6884][5a6d6884]]
 impl eframe::App for TemplateApp {
     /// Called by the frame work to save state before shutdown.
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
@@ -114,3 +123,4 @@ impl eframe::App for TemplateApp {
         }
     }
 }
+// 5a6d6884 ends here

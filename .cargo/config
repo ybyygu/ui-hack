@@ -1,0 +1,7 @@
+# [[file:../ui-hack.note::0bd72b56][0bd72b56]]
+[build]
+target-dir = "/scratch/cargo/ui-hack"
+
+[alias]
+t = "test --tests --all-features -- --nocapture --test-threads=1"
+# 0bd72b56 ends here
