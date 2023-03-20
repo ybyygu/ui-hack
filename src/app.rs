@@ -6,7 +6,7 @@ use egui::Ui;
 
 // [[file:../ui-hack.note::7586f426][7586f426]]
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
-enum InputTemplate {
+enum InputPage {
     Gaussian,
     Orca,
     Vasp,
@@ -26,7 +26,7 @@ enum Enum {
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct TemplateApp {
     // current input generator
-    template: InputTemplate,
+    template: InputPage,
 
     title: String,
 
@@ -39,21 +39,20 @@ pub struct TemplateApp {
     // functional, basis set etc.
     theory: String,
 
-    // this how you opt-out of serialization of a member
     #[serde(skip)]
-    value: f32,
-}
+    dropped_files: Vec<egui::DroppedFile>,
+ }
 
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            value: 2.7,
+            template: InputPage::Vasp,
             radio: Enum::First,
             title: String::new(),
             charge: 0,
             multiplicity: 1,
             theory: String::new(),
-            template: InputTemplate::Orca,
+            dropped_files: vec![],
         }
     }
 }
@@ -80,11 +79,12 @@ impl TemplateApp {
 // [[file:../ui-hack.note::fbd820f2][fbd820f2]]
 fn ui_side_panel(ui: &mut Ui, state: &mut TemplateApp) {
     ui.heading("Input templates");
+    ui.separator();
 
     ui.vertical(|ui| {
-        ui.selectable_value(&mut state.template, InputTemplate::Vasp, "VASP");
-        ui.selectable_value(&mut state.template, InputTemplate::Orca, "ORCA");
-        ui.selectable_value(&mut state.template, InputTemplate::Gaussian, "Gaussian");
+        ui.selectable_value(&mut state.template, InputPage::Vasp, "VASP");
+        ui.selectable_value(&mut state.template, InputPage::Orca, "ORCA");
+        ui.selectable_value(&mut state.template, InputPage::Gaussian, "Gaussian");
     });
 
     ui.separator();
@@ -100,13 +100,63 @@ fn ui_side_panel(ui: &mut Ui, state: &mut TemplateApp) {
 }
 // fbd820f2 ends here
 
+// [[file:../ui-hack.note::ab2c91e3][ab2c91e3]]
+fn detect_files_being_dropped(ctx: &egui::Context, state: &mut TemplateApp) {
+    use egui::*;
+    use std::fmt::Write as _;
+
+    // Preview hovering files:
+    let mut text = "Dropping files:\n".to_owned();
+    ctx.input(|i| {
+        let files = &i.raw.hovered_files;
+        if !files.is_empty() {
+            for file in files {
+                if let Some(path) = &file.path {
+                    text += &format!("\n{}", path.display());
+                }
+            }
+        }
+    });
+
+    // Collect dropped files:
+    ctx.input(|i| {
+        if !i.raw.dropped_files.is_empty() {
+            state.dropped_files = i.raw.dropped_files.clone();
+        }
+    });
+
+    // Show dropped files (if any):
+    if !state.dropped_files.is_empty() {
+        let mut open = true;
+        egui::Window::new("Dropped files").open(&mut open).show(ctx, |ui| {
+            for file in &state.dropped_files {
+                let mut info = if let Some(path) = &file.path {
+                    path.display().to_string()
+                } else if !file.name.is_empty() {
+                    file.name.clone()
+                } else {
+                    "???".to_owned()
+                };
+                if let Some(bytes) = &file.bytes {
+                    write!(info, " ({} bytes)", bytes.len()).ok();
+                }
+                ui.label(info);
+            }
+        });
+        if !open {
+            state.dropped_files.clear();
+        }
+    }
+}
+// ab2c91e3 ends here
+
 // [[file:../ui-hack.note::d0f130e0][d0f130e0]]
 fn ui_central_panel(ui: &mut Ui, state: &mut TemplateApp) {
     ui.heading(format!("{:?} input generator", state.template));
-    match state.template {
-        InputTemplate::Orca => {
-            ui.heading("ORCA input");
+    ui.separator();
 
+    match state.template {
+        InputPage::Orca => {
             // 格线对齐
             egui::Grid::new("my_grid")
                 .num_columns(2)
@@ -158,7 +208,6 @@ fn ui_central_panel(ui: &mut Ui, state: &mut TemplateApp) {
             });
         }
         _ => {
-            ui.separator();
             ui.label("Under Construction!");
         }
     }
@@ -177,13 +226,14 @@ impl eframe::App for TemplateApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui_side_panel(ui, self);
-
         });
 
         // The central panel the region left after adding TopPanel's and SidePanel's
         egui::CentralPanel::default().show(ctx, |ui| {
             ui_central_panel(ui, self);
         });
+
+        detect_files_being_dropped(ctx, self);
     }
 }
 // 5a6d6884 ends here
