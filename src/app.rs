@@ -32,7 +32,9 @@ pub struct TemplateApp {
     #[serde(skip)]
     value: f32,
 }
+// 9a0316a5 ends here
 
+// [[file:../ui-hack.note::e67677fe][e67677fe]]
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
@@ -46,9 +48,7 @@ impl Default for TemplateApp {
         }
     }
 }
-// 9a0316a5 ends here
 
-// [[file:../ui-hack.note::e67677fe][e67677fe]]
 impl TemplateApp {
     /// Called once before the first frame.
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
@@ -86,11 +86,6 @@ impl eframe::App for TemplateApp {
             theory,
             ..
         } = self;
-
-        // Examples of how to create different panels and windows.
-        // Pick whichever suits you.
-        // Tip: a good default choice is to just keep the `CentralPanel`.
-        // For inspiration and more examples, go to https://emilk.github.io/egui
 
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
             ui.heading("Side Panel");
@@ -148,11 +143,28 @@ impl eframe::App for TemplateApp {
                     ui.label("Theory:");
                     ui.add(egui::TextEdit::singleline(theory).hint_text("B3LYP Def2-SVP"));
                     ui.end_row();
-                    ui.label("RI approximation:");
                 });
 
             ui.separator();
-            ui.end_row();
+            let tooltip = "Click to copy generated input in json";
+            if ui.button("📋").on_hover_text(tooltip).clicked() {
+                ui.output_mut(|o| o.copied_text = "some_text".to_string());
+            }
+            ui.separator();
+            ui.collapsing("Misc", |ui| {
+                egui::Grid::new("my_grid")
+                    .num_columns(2)
+                    .spacing([40.0, 4.0])
+                    .striped(true)
+                    .show(ui, |ui| {
+                        ui.label("Charge:");
+                        ui.add(egui::DragValue::new(charge).speed(1.0));
+                        ui.end_row();
+                        ui.label("RI approximation:");
+                        ui.add(egui::DragValue::new(charge).speed(1.0));
+                        ui.end_row();
+                    });
+            });
         });
     }
 }
