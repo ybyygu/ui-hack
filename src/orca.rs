@@ -17,6 +17,12 @@ enum CalculationType {
     MolecularDynamics,
 }
 
+impl Default for CalculationType {
+    fn default() -> Self {
+        Self::SinglePoint
+    }
+}
+
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 enum DFTGrid {
     DefGrid1,
@@ -52,6 +58,12 @@ enum Method {
     CCSD,
 }
 
+impl Default for Method {
+    fn default() -> Self {
+        Self::B3LYP
+    }
+}
+
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 enum BasisSet {
     #[serde(rename = "def2-SVP")]
@@ -62,6 +74,12 @@ enum BasisSet {
     Def2Tzvpp,
     #[serde(rename = "def2-QZVPP")]
     Def2Qzvpp,
+}
+
+impl Default for BasisSet {
+    fn default() -> Self {
+        Self::Def2Svp
+    }
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -113,7 +131,14 @@ enum Solvent {
     Toluene,
 }
 
+impl Default for Solvent {
+    fn default() -> Self {
+        Self::Water
+    }
+}
+
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[serde(tag = "model", content = "solvent")]
 enum Solvation {
     SMD(Solvent),
     CPCM(Solvent),
@@ -129,17 +154,26 @@ enum Dispersion {
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
+struct Multiplicity(usize);
+
+impl Default for Multiplicity {
+    fn default() -> Self {
+        Self(1)
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Deserialize, Serialize)]
 pub struct Settings {
     calculation: CalculationType,
     method: Method,
-    dispersion: Option<Dispersion>,
     basis_set: BasisSet,
     charge: isize,
-    multiplicity: usize,
+    multiplicity: Multiplicity,
+    dispersion: Option<Dispersion>,
     scf_type: Option<SCFType>,
     scf_convergence: Option<SCFConvergence>,
     solvation: Option<Solvation>,
-    dft_grid: Option<DftGrid>,
+    dft_grid: Option<DFTGrid>,
     symmetry: Option<Symmetry>,
 }
 // 4ac0cb23 ends here

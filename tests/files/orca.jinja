@@ -1,0 +1,28 @@
+# minijinja template syntax: https://docs.rs/minijinja/latest/minijinja/syntax/index.html
+# run type, basis set, ...
+! {{method}} {{basis_set or "def2-SVP"}} {{scf_type or ""}} def2/J
+# run type
+! {{calculation}}
+{% if solvation -%}
+# solvation model
+! {{solvation.model}}({{solvation.solvent}})
+{%- endif %}
+# other optional parameters
+! {{symmetry or "UseSym"}} {{scf_convergence or ""}} {{dft_grid or ""}}{{dispersion or ""}}
+# resume from previous job
+! AUTOSTART
+
+# for nodes in queue "dft"
+%pal nprocs 36 end
+%maxcore 5000
+
+# for resolving scf convergence problems
+! KDIIS SOSCF
+#! SlowConv
+%scf
+  maxiter 500
+  Shift Shift 0.1 ErrOff 0.1 end
+end
+
+# charge and multiplicity
+* xyzfile {{charge}} {{multiplicity}} orca-input.xyz
