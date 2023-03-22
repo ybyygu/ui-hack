@@ -161,7 +161,9 @@ impl Default for Multiplicity {
         Self(1)
     }
 }
+// 4ac0cb23 ends here
 
+// [[file:../ui-hack.note::8e8acf6e][8e8acf6e]]
 #[derive(Debug, Default, PartialEq, Deserialize, Serialize)]
 pub struct Settings {
     calculation: CalculationType,
@@ -176,4 +178,4 @@ pub struct Settings {
     dft_grid: Option<DFTGrid>,
     symmetry: Option<Symmetry>,
 }
-// 4ac0cb23 ends here
+// 8e8acf6e ends here

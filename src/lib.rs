@@ -6,6 +6,7 @@
 // [[file:../ui-hack.note::57cefa6d][57cefa6d]]
 mod app;
 mod orca;
+mod vasp;
 
 pub use app::TemplateApp;
 // 57cefa6d ends here
