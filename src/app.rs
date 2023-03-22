@@ -230,7 +230,7 @@ impl eframe::App for TemplateApp {
 
         // The central panel the region left after adding TopPanel's and SidePanel's
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui_central_panel(ui, self);
+             ui_central_panel(ui, self);
         });
 
         detect_files_being_dropped(ctx, self);
