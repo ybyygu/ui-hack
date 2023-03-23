@@ -41,7 +41,9 @@ pub struct TemplateApp {
 
     #[serde(skip)]
     dropped_files: Vec<egui::DroppedFile>,
- }
+
+    orca_settings: crate::orca::Settings,
+}
 
 impl Default for TemplateApp {
     fn default() -> Self {
@@ -52,6 +54,7 @@ impl Default for TemplateApp {
             charge: 0,
             multiplicity: 1,
             theory: String::new(),
+            orca_settings: crate::orca::Settings::default(),
             dropped_files: vec![],
         }
     }
@@ -206,6 +209,9 @@ fn ui_central_panel(ui: &mut Ui, state: &mut TemplateApp) {
                         ui.end_row();
                     });
             });
+        }
+        InputPage::Vasp => {
+            state.orca_settings.show(ui);
         }
         _ => {
             ui.label("Under Construction!");
