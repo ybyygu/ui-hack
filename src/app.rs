@@ -42,7 +42,7 @@ pub struct TemplateApp {
     #[serde(skip)]
     dropped_files: Vec<egui::DroppedFile>,
 
-    orca_settings: crate::orca::Settings,
+    orca_state: crate::orca::State,
 }
 
 impl Default for TemplateApp {
@@ -54,7 +54,7 @@ impl Default for TemplateApp {
             charge: 0,
             multiplicity: 1,
             theory: String::new(),
-            orca_settings: crate::orca::Settings::default(),
+            orca_state: crate::orca::State::default(),
             dropped_files: vec![],
         }
     }
@@ -211,7 +211,7 @@ fn ui_central_panel(ui: &mut Ui, state: &mut TemplateApp) {
             });
         }
         InputPage::Vasp => {
-            state.orca_settings.show(ui);
+            state.orca_state.show(ui);
         }
         _ => {
             ui.label("Under Construction!");
@@ -236,7 +236,7 @@ impl eframe::App for TemplateApp {
 
         // The central panel the region left after adding TopPanel's and SidePanel's
         egui::CentralPanel::default().show(ctx, |ui| {
-             ui_central_panel(ui, self);
+            ui_central_panel(ui, self);
         });
 
         detect_files_being_dropped(ctx, self);
