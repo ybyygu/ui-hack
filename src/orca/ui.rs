@@ -31,11 +31,13 @@ impl Default for State {
 // [[file:../../ui-hack.note::05df7b55][05df7b55]]
 impl State {
     fn show_charge_and_multiplicity(&mut self, ui: &mut Ui) {
-        ui.label("Charge:");
-        ui.add(egui::DragValue::new(&mut self.settings.charge).speed(1.0));
-        ui.end_row();
-        ui.label("Multiplicity:");
-        ui.add(egui::DragValue::new(&mut self.settings.multiplicity.0).speed(1.0));
+        ui.horizontal(|ui| {
+            ui.label("Charge:");
+            ui.add(egui::DragValue::new(&mut self.settings.charge).speed(1.0));
+            ui.end_row();
+            ui.label("Multiplicity:");
+            ui.add(egui::DragValue::new(&mut self.settings.multiplicity.0).speed(1.0));
+        });
     }
 }
 // 05df7b55 ends here
@@ -52,6 +54,20 @@ impl State {
                 for t in enum_iterator::all::<BasisSet>() {
                     let s = enum_value!(&t);
                     ui.selectable_value(&mut self.settings.basis_set, t, s);
+                }
+            });
+    }
+
+    fn show_scf_type(&mut self, ui: &mut Ui) {
+        ui.label("SCF Type");
+        let s = enum_value!(&self.settings.scf_type);
+        egui::ComboBox::from_id_source("orca-scf-type")
+            .width(200.0)
+            .selected_text(s)
+            .show_ui(ui, |ui| {
+                for t in enum_iterator::all::<SCFType>() {
+                    let s = enum_value!(&t);
+                    ui.selectable_value(&mut self.settings.scf_type, Some(t), s);
                 }
             });
     }
@@ -101,9 +117,27 @@ impl State {
 // cd0bd135 ends here
 
 // [[file:../../ui-hack.note::866bc573][866bc573]]
+fn render_template<S: Serialize>(template: &str, settings: S) -> Option<String> {
+    use minijinja::{context, Environment};
+
+    let mut env = Environment::new();
+    env.add_template("hello", template).ok()?;
+    let tmpl = env.get_template("hello").ok()?;
+    let s = tmpl.render(settings).ok()?;
+    Some(s)
+}
+
 impl State {
     fn show_template_selection(&mut self, ui: &mut Ui) {
+        let s = include_str!("../../tests/files/orca.jinja");
         ui.horizontal(|ui| {
+            // clipboard button
+            let tooltip = "Click to copy generated input in json";
+            if ui.button("📋").on_hover_text(tooltip).clicked() {
+                let input = render_template(s, &self.settings).unwrap_or_default();
+                ui.output_mut(|o| o.copied_text = input);
+            }
+
             ui.label("Render template:");
             egui::ComboBox::from_id_source("orca-template")
                 .width(200.0)
@@ -118,7 +152,6 @@ impl State {
         ui.separator();
         match self.current_template.as_str() {
             "normal.jinja" => {
-                let s = include_str!("../../tests/files/orca.jinja");
                 selectable_text(ui, &s);
             }
             "spectrum.jinja" => {
@@ -144,18 +177,33 @@ fn selectable_text(ui: &mut Ui, mut text: &str) {
 // [[file:../../ui-hack.note::7e56bc40][7e56bc40]]
 impl State {
     pub fn show(&mut self, ui: &mut Ui) {
-        egui::Grid::new("orca").num_columns(2).show(ui, |ui| {
-            self.show_calculation(ui);
-            ui.end_row();
+        egui::Grid::new("orca_grid_core").num_columns(2).show(ui, |ui| {
             self.show_method(ui);
+            ui.end_row();
+            self.show_calculation(ui);
             ui.end_row();
             self.show_basis(ui);
             ui.end_row();
-            self.show_solvention(ui);
-            ui.end_row();
-            self.show_charge_and_multiplicity(ui);
-            ui.end_row();
         });
+        self.show_charge_and_multiplicity(ui);
+        ui.collapsing("Misc", |ui| {
+            egui::Grid::new("orca_grid_misc")
+                .num_columns(2)
+                .spacing([40.0, 4.0])
+                .striped(true)
+                .show(ui, |ui| {
+                    ui.label("RI approximation:");
+                    ui.add(egui::DragValue::new(&mut self.settings.charge).speed(1.0));
+                    ui.end_row();
+                    ui.checkbox(&mut self.settings.use_symmetry, "Use Symmetry");
+                    ui.end_row();
+                    self.show_solvention(ui);
+                    ui.end_row();
+                    self.show_scf_type(ui);
+                    ui.end_row();
+                });
+        });
+
         ui.separator();
         self.show_template_selection(ui);
     }

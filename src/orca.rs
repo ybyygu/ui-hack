@@ -87,7 +87,7 @@ impl Default for BasisSet {
     }
 }
 
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Serialize, Sequence)]
 enum SCFType {
     /// spin unrestricted SCF
     #[serde(rename = "UKS")]
@@ -155,6 +155,7 @@ enum Dispersion {
     D2,
     D3Bj,
     D3Zero,
+    // NOTE: there are bugs before version 5.0.4
     D4,
 }
 
@@ -181,7 +182,7 @@ pub struct Settings {
     scf_convergence: Option<SCFConvergence>,
     solvation: Option<Solvation>,
     dft_grid: Option<DFTGrid>,
-    symmetry: Option<Symmetry>,
+    use_symmetry: bool,
 }
 
 pub use ui::State;
