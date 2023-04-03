@@ -159,7 +159,7 @@ fn ui_central_panel(ui: &mut Ui, state: &mut TemplateApp) {
     ui.separator();
 
     match state.template {
-        InputPage::Orca => {
+        InputPage::Gaussian => {
             // 格线对齐
             egui::Grid::new("my_grid")
                 .num_columns(2)
@@ -210,7 +210,7 @@ fn ui_central_panel(ui: &mut Ui, state: &mut TemplateApp) {
                     });
             });
         }
-        InputPage::Vasp => {
+        InputPage::Orca => {
             state.orca_state.show(ui);
         }
         _ => {

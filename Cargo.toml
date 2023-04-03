@@ -25,7 +25,6 @@ serde_json = "1.0.94"
 enum-iterator = "1.4.0"
 minijinja = "0.26.0"
 
-
 # native:
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tracing-subscriber = "0.3"
