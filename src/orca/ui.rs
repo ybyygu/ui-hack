@@ -1,12 +1,6 @@
 // [[file:../../ui-hack.note::697a91f7][697a91f7]]
 use super::*;
 use egui::Ui;
-
-macro_rules! enum_value {
-    ($v:expr) => {{
-        serde_json::to_string($v).unwrap().trim_matches('"').to_string()
-    }};
-}
 // 697a91f7 ends here
 
 // [[file:../../ui-hack.note::0dd8f72b][0dd8f72b]]
@@ -46,62 +40,49 @@ impl State {
 }
 // 05df7b55 ends here
 
+// [[file:../../ui-hack.note::f4738d12][f4738d12]]
+macro_rules! enum_value {
+    ($v:expr) => {{
+        serde_json::to_string($v).unwrap().trim_matches('"').to_string()
+    }};
+}
+
+macro_rules! show_combo_box_enum {
+    ($id:literal, $ui:ident, $var:expr, $type:ty, $width:literal) => {
+        let s = enum_value!(&$var);
+        egui::ComboBox::from_id_source($id)
+            .width($width)
+            .selected_text(s)
+            .show_ui($ui, |ui| {
+                for t in enum_iterator::all::<$type>() {
+                    let s = enum_value!(&t);
+                    ui.selectable_value(&mut $var, t.into(), s);
+                }
+            });
+    };
+}
+// f4738d12 ends here
+
 // [[file:../../ui-hack.note::cd0bd135][cd0bd135]]
 impl State {
     fn show_basis(&mut self, ui: &mut Ui) {
         ui.label("Basis set:");
-        let s = enum_value!(&self.settings.basis_set);
-        egui::ComboBox::from_id_source("orca-basis")
-            .width(200.0)
-            .selected_text(s)
-            .show_ui(ui, |ui| {
-                for t in enum_iterator::all::<BasisSet>() {
-                    let s = enum_value!(&t);
-                    ui.selectable_value(&mut self.settings.basis_set, t, s);
-                }
-            });
+        show_combo_box_enum!("orca-basis", ui, self.settings.basis_set, BasisSet, 200.0);
     }
 
     fn show_method(&mut self, ui: &mut Ui) {
         ui.label("Method:");
-        let s = enum_value!(&self.settings.method);
-        egui::ComboBox::from_id_source("orca-method")
-            .width(200.0)
-            .selected_text(s)
-            .show_ui(ui, |ui| {
-                for t in enum_iterator::all::<Method>() {
-                    let s = enum_value!(&t);
-                    ui.selectable_value(&mut self.settings.method, t, s);
-                }
-            });
+        show_combo_box_enum!("orca-method", ui, self.settings.method, Method, 200.0);
     }
 
     fn show_solvention(&mut self, ui: &mut Ui) {
         ui.label("Solvent:");
-        let s = enum_value!(&self.settings.solvation);
-        egui::ComboBox::from_id_source("orca-solvation")
-            .width(400.0)
-            .selected_text(s)
-            .show_ui(ui, |ui| {
-                for t in enum_iterator::all::<Solvation>() {
-                    let s = enum_value!(&t);
-                    ui.selectable_value(&mut self.settings.solvation, Some(t), s);
-                }
-            });
+        show_combo_box_enum!("orca-solvation", ui, self.settings.solvation, Solvation, 300.0);
     }
 
     fn show_calculation(&mut self, ui: &mut Ui) {
         ui.label("Calculation:");
-        let s = enum_value!(&self.settings.calculation);
-        egui::ComboBox::from_id_source("orca-calc")
-            .width(200.0)
-            .selected_text(s)
-            .show_ui(ui, |ui| {
-                for t in enum_iterator::all::<CalculationType>() {
-                    let s = enum_value!(&t);
-                    ui.selectable_value(&mut self.settings.calculation, t, s);
-                }
-            });
+        show_combo_box_enum!("orca-calc", ui, self.settings.calculation, CalculationType, 200.0);
     }
 }
 // cd0bd135 ends here
@@ -109,45 +90,18 @@ impl State {
 // [[file:../../ui-hack.note::9e49412c][9e49412c]]
 impl State {
     fn show_scf_type(&mut self, ui: &mut Ui) {
-        ui.label("SCF Type");
-        let s = enum_value!(&self.settings.scf_type);
-        egui::ComboBox::from_id_source("orca-scf-type")
-            .width(200.0)
-            .selected_text(s)
-            .show_ui(ui, |ui| {
-                for t in enum_iterator::all::<SCFType>() {
-                    let s = enum_value!(&t);
-                    ui.selectable_value(&mut self.settings.scf_type, Some(t), s);
-                }
-            });
+        ui.label("SCF Type:");
+        show_combo_box_enum!("orca-scf-type", ui, self.settings.scf_type, SCFType, 200.0);
     }
 
     fn show_dft_grid(&mut self, ui: &mut Ui) {
-        ui.label("DFT Grid");
-        let s = enum_value!(&self.settings.dft_grid);
-        egui::ComboBox::from_id_source("orca-dft-grid")
-            .width(200.0)
-            .selected_text(s)
-            .show_ui(ui, |ui| {
-                for t in enum_iterator::all::<DFTGrid>() {
-                    let s = enum_value!(&t);
-                    ui.selectable_value(&mut self.settings.dft_grid, Some(t), s);
-                }
-            });
+        ui.label("DFT Grid:");
+        show_combo_box_enum!("orca-dft-grid", ui, self.settings.dft_grid, DFTGrid, 200.0);
     }
 
     pub fn show_scf_convergence(&mut self, ui: &mut Ui) {
-        ui.label("SCF Convergence");
-        let s = enum_value!(&self.settings.scf_convergence);
-        egui::ComboBox::from_id_source("orca-scf-convergence")
-            .width(200.0)
-            .selected_text(s)
-            .show_ui(ui, |ui| {
-                for t in enum_iterator::all::<SCFConvergence>() {
-                    let s = enum_value!(&t);
-                    ui.selectable_value(&mut self.settings.scf_convergence, Some(t), s);
-                }
-            });
+        ui.label("SCF Convergence:");
+        show_combo_box_enum!("orca-scf-convergence", ui, self.settings.scf_convergence, SCFConvergence, 200.0);
     }
 }
 // 9e49412c ends here
@@ -156,16 +110,7 @@ impl State {
 impl State {
     pub fn show_dispersion(&mut self, ui: &mut Ui) {
         ui.label("Dispersion");
-        let s = enum_value!(&self.settings.dispersion);
-        egui::ComboBox::from_id_source("orca-dispersion")
-            .width(200.0)
-            .selected_text(s)
-            .show_ui(ui, |ui| {
-                for t in enum_iterator::all::<Dispersion>() {
-                    let s = enum_value!(&t);
-                    ui.selectable_value(&mut self.settings.dispersion, t, s);
-                }
-            });
+        show_combo_box_enum!("orca-dispersion", ui, self.settings.dispersion, Dispersion, 200.0);
     }
 }
 // 292360e9 ends here
@@ -174,16 +119,7 @@ impl State {
 impl State {
     pub fn show_ri(&mut self, ui: &mut Ui) {
         ui.label("RI Approximation");
-        let s = enum_value!(&self.settings.ri);
-        egui::ComboBox::from_id_source("orca-ri")
-            .width(200.0)
-            .selected_text(s)
-            .show_ui(ui, |ui| {
-                for t in enum_iterator::all::<RIApproximation>() {
-                    let s = enum_value!(&t);
-                    ui.selectable_value(&mut self.settings.ri, t, s);
-                }
-            });
+        show_combo_box_enum!("orca-ri", ui, self.settings.ri, RIApproximation, 200.0);
     }
 }
 // 61bab0f0 ends here

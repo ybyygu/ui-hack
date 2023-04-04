@@ -50,7 +50,7 @@ impl Default for Symmetry {
 #[derive(Debug, PartialEq, Deserialize, Serialize, Sequence)]
 enum Method {
     PBE,
-    PB86,
+    BP86,
     TPSS,
     B3LYP,
     X3LYP,
