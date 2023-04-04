@@ -28,7 +28,7 @@ impl Default for CalculationType {
     }
 }
 
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Serialize, Sequence)]
 enum DFTGrid {
     DefGrid1,
     DefGrid2,
@@ -156,13 +156,19 @@ enum Solvation {
 }
 
 /// DFT Calculations with Atom-pairwise Dispersion Correction
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Serialize, Sequence)]
 enum Dispersion {
     D2,
-    D3Bj,
+    D3BJ,
     D3Zero,
     // NOTE: there are bugs before version 5.0.4
     D4,
+}
+
+impl Default for Dispersion {
+    fn default() -> Self {
+        Self::D3BJ
+    }
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -175,6 +181,20 @@ impl Default for Multiplicity {
 }
 // 4ac0cb23 ends here
 
+// [[file:../ui-hack.note::e9335c59][e9335c59]]
+#[derive(Debug, PartialEq, Deserialize, Serialize, Sequence)]
+enum RIApproximation {
+    RIJCOSX,
+    NoCOSX,
+}
+
+impl Default for RIApproximation {
+    fn default() -> Self {
+        Self::RIJCOSX
+    }
+}
+// e9335c59 ends here
+
 // [[file:../ui-hack.note::8e8acf6e][8e8acf6e]]
 #[derive(Debug, Default, PartialEq, Deserialize, Serialize)]
 pub struct Settings {
@@ -183,12 +203,13 @@ pub struct Settings {
     basis_set: BasisSet,
     charge: isize,
     multiplicity: Multiplicity,
-    dispersion: Option<Dispersion>,
+    dispersion: Dispersion,
     scf_type: Option<SCFType>,
     scf_convergence: Option<SCFConvergence>,
     solvation: Option<Solvation>,
     dft_grid: Option<DFTGrid>,
     symmetry: Symmetry,
+    ri: RIApproximation,
 }
 
 pub use ui::State;

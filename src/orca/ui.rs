@@ -118,6 +118,20 @@ impl State {
             });
     }
 
+    fn show_dft_grid(&mut self, ui: &mut Ui) {
+        ui.label("DFT Grid");
+        let s = enum_value!(&self.settings.dft_grid);
+        egui::ComboBox::from_id_source("orca-dft-grid")
+            .width(200.0)
+            .selected_text(s)
+            .show_ui(ui, |ui| {
+                for t in enum_iterator::all::<DFTGrid>() {
+                    let s = enum_value!(&t);
+                    ui.selectable_value(&mut self.settings.dft_grid, Some(t), s);
+                }
+            });
+    }
+
     pub fn show_scf_convergence(&mut self, ui: &mut Ui) {
         ui.label("SCF Convergence");
         let s = enum_value!(&self.settings.scf_convergence);
@@ -133,6 +147,42 @@ impl State {
     }
 }
 // 9e49412c ends here
+
+// [[file:../../ui-hack.note::292360e9][292360e9]]
+impl State {
+    pub fn show_dispersion(&mut self, ui: &mut Ui) {
+        ui.label("Dispersion");
+        let s = enum_value!(&self.settings.dispersion);
+        egui::ComboBox::from_id_source("orca-dispersion")
+            .width(200.0)
+            .selected_text(s)
+            .show_ui(ui, |ui| {
+                for t in enum_iterator::all::<Dispersion>() {
+                    let s = enum_value!(&t);
+                    ui.selectable_value(&mut self.settings.dispersion, t, s);
+                }
+            });
+    }
+}
+// 292360e9 ends here
+
+// [[file:../../ui-hack.note::61bab0f0][61bab0f0]]
+impl State {
+    pub fn show_ri(&mut self, ui: &mut Ui) {
+        ui.label("RI Approximation");
+        let s = enum_value!(&self.settings.ri);
+        egui::ComboBox::from_id_source("orca-ri")
+            .width(200.0)
+            .selected_text(s)
+            .show_ui(ui, |ui| {
+                for t in enum_iterator::all::<RIApproximation>() {
+                    let s = enum_value!(&t);
+                    ui.selectable_value(&mut self.settings.ri, t, s);
+                }
+            });
+    }
+}
+// 61bab0f0 ends here
 
 // [[file:../../ui-hack.note::b4764c7b][b4764c7b]]
 impl State {
@@ -162,7 +212,7 @@ impl State {
         let s = include_str!("../../tests/files/orca.jinja");
         ui.horizontal(|ui| {
             // clipboard button
-            let tooltip = "Click to copy generated input in json";
+            let tooltip = "Click to copy generated input";
             if ui.button("📋").on_hover_text(tooltip).clicked() {
                 let input = render_template(s, &self.settings).unwrap_or_default();
                 ui.output_mut(|o| o.copied_text = input);
@@ -226,6 +276,8 @@ impl State {
                     ui.end_row();
                     self.show_scf_convergence(ui);
                     ui.end_row();
+                    self.show_dft_grid(ui);
+                    ui.end_row();
                 });
         });
         ui.collapsing("Misc", |ui| {
@@ -234,11 +286,14 @@ impl State {
                 .spacing([40.0, 4.0])
                 .striped(true)
                 .show(ui, |ui| {
-                    ui.label("RI approximation:");
-                    ui.add(egui::DragValue::new(&mut self.settings.charge).speed(1.0));
+                    // ui.label("RI approximation:");
+                    self.show_ri(ui);
+                    // ui.add(egui::DragValue::new(&mut self.settings.charge).speed(1.0));
                     ui.end_row();
                     ui.label("Symmetry:");
                     self.show_symmetry(ui);
+                    ui.end_row();
+                    self.show_dispersion(ui);
                     ui.end_row();
                     self.show_solvention(ui);
                     ui.end_row();

@@ -1,6 +1,6 @@
 # minijinja template syntax: https://docs.rs/minijinja/latest/minijinja/syntax/index.html
-# run type, basis set, ...
-! {{method}} {{basis_set or "def2-SVP"}} {{scf_type or ""}} def2/J
+# method, basis set, ...
+! {{method}} {{basis_set or "def2-SVP"}} {{scf_type or ""}} def2/J {{ri or ""}}
 # run type
 ! {{calculation}}
 {% if solvation -%}
