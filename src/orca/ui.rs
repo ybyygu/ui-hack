@@ -15,14 +15,18 @@ pub struct State {
     settings: Settings,
     templates: Vec<String>,
     current_template: String,
+    rendered_input: String,
+    input_template: String,
 }
 
 impl Default for State {
     fn default() -> Self {
         Self {
             settings: Settings::default(),
-            templates: vec!["normal.jinja".to_owned(), "spectrum.jinja".to_owned()],
+            templates: vec!["normal.jinja".to_owned(), "spectrum.jinja".to_owned(), "custom".to_owned()],
             current_template: "normal.jinja".to_owned(),
+            input_template: String::new(),
+            rendered_input: String::new(),
         }
     }
 }
@@ -209,13 +213,12 @@ fn render_template<S: Serialize>(template: &str, settings: S) -> Option<String> 
 
 impl State {
     fn show_template_selection(&mut self, ui: &mut Ui) {
-        let s = include_str!("../../tests/files/orca.jinja");
         ui.horizontal(|ui| {
             // clipboard button
             let tooltip = "Click to copy generated input";
             if ui.button("📋").on_hover_text(tooltip).clicked() {
-                let input = render_template(s, &self.settings).unwrap_or_default();
-                ui.output_mut(|o| o.copied_text = input);
+                self.rendered_input = render_template(&self.input_template, &self.settings).unwrap_or_default();
+                ui.output_mut(|o| o.copied_text = self.rendered_input.clone());
             }
 
             ui.label("Render template:");
@@ -232,30 +235,54 @@ impl State {
         ui.separator();
         match self.current_template.as_str() {
             "normal.jinja" => {
-                selectable_text(ui, &s);
+                let mut s = include_str!("../../tests/files/orca.jinja");
+                selectable_text(ui, &mut s, "template");
+                self.input_template = s.to_string();
             }
             "spectrum.jinja" => {
-                selectable_text(ui, "spectrum");
+                selectable_text(ui, &mut "todo!", "template");
+            }
+            "custom" => {
+                editable_text(ui, &mut self.input_template, "template");
             }
             _ => todo!(),
         }
-        ui.separator();
+
+        selectable_text(ui, &mut self.rendered_input.as_str(), "rendered");
     }
 }
 
-fn selectable_text(ui: &mut Ui, mut text: &str) {
-    egui::ScrollArea::vertical().show(ui, |ui| {
-        ui.add(
-            egui::TextEdit::multiline(&mut text)
-                .desired_width(f32::INFINITY)
-                .font(egui::TextStyle::Monospace.resolve(ui.style())),
-        );
+fn editable_text(ui: &mut Ui, text: &mut String, label: &str) {
+    ui.collapsing(label, |ui| {
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            ui.add(
+                egui::TextEdit::multiline(text)
+                    .hint_text(label)
+                    .desired_width(f32::INFINITY)
+                    .font(egui::TextStyle::Monospace.resolve(ui.style())),
+            );
+        });
+    });
+}
+
+// NOTE: read-only
+fn selectable_text(ui: &mut Ui, mut text: &str, label: &str) {
+    ui.collapsing(label, |ui| {
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            ui.add(
+                egui::TextEdit::multiline(&mut text)
+                    .hint_text(label)
+                    .desired_width(f32::INFINITY)
+                    .font(egui::TextStyle::Monospace.resolve(ui.style())),
+            );
+        });
     });
 }
 // 866bc573 ends here
 
 // [[file:../../ui-hack.note::7e56bc40][7e56bc40]]
 impl State {
+    /// Show UI for all orca settings
     pub fn show(&mut self, ui: &mut Ui) {
         egui::Grid::new("orca_grid_core").num_columns(2).show(ui, |ui| {
             self.show_method(ui);
@@ -286,9 +313,7 @@ impl State {
                 .spacing([40.0, 4.0])
                 .striped(true)
                 .show(ui, |ui| {
-                    // ui.label("RI approximation:");
                     self.show_ri(ui);
-                    // ui.add(egui::DragValue::new(&mut self.settings.charge).speed(1.0));
                     ui.end_row();
                     ui.label("Symmetry:");
                     self.show_symmetry(ui);

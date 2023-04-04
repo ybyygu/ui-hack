@@ -53,10 +53,9 @@ enum Method {
     PB86,
     TPSS,
     B3LYP,
-    #[serde(rename = "CAM-B3LYP")]
-    CAMB3LYP,
     X3LYP,
     PBE0,
+    TPSSh,
     M06,
     M062X,
     wB97X,
