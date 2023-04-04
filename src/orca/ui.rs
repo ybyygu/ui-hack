@@ -58,20 +58,6 @@ impl State {
             });
     }
 
-    fn show_scf_type(&mut self, ui: &mut Ui) {
-        ui.label("SCF Type");
-        let s = enum_value!(&self.settings.scf_type);
-        egui::ComboBox::from_id_source("orca-scf-type")
-            .width(200.0)
-            .selected_text(s)
-            .show_ui(ui, |ui| {
-                for t in enum_iterator::all::<SCFType>() {
-                    let s = enum_value!(&t);
-                    ui.selectable_value(&mut self.settings.scf_type, Some(t), s);
-                }
-            });
-    }
-
     fn show_method(&mut self, ui: &mut Ui) {
         ui.label("Method:");
         let s = enum_value!(&self.settings.method);
@@ -115,6 +101,50 @@ impl State {
     }
 }
 // cd0bd135 ends here
+
+// [[file:../../ui-hack.note::9e49412c][9e49412c]]
+impl State {
+    fn show_scf_type(&mut self, ui: &mut Ui) {
+        ui.label("SCF Type");
+        let s = enum_value!(&self.settings.scf_type);
+        egui::ComboBox::from_id_source("orca-scf-type")
+            .width(200.0)
+            .selected_text(s)
+            .show_ui(ui, |ui| {
+                for t in enum_iterator::all::<SCFType>() {
+                    let s = enum_value!(&t);
+                    ui.selectable_value(&mut self.settings.scf_type, Some(t), s);
+                }
+            });
+    }
+
+    pub fn show_scf_convergence(&mut self, ui: &mut Ui) {
+        ui.label("SCF Convergence");
+        let s = enum_value!(&self.settings.scf_convergence);
+        egui::ComboBox::from_id_source("orca-scf-convergence")
+            .width(200.0)
+            .selected_text(s)
+            .show_ui(ui, |ui| {
+                for t in enum_iterator::all::<SCFConvergence>() {
+                    let s = enum_value!(&t);
+                    ui.selectable_value(&mut self.settings.scf_convergence, Some(t), s);
+                }
+            });
+    }
+}
+// 9e49412c ends here
+
+// [[file:../../ui-hack.note::b4764c7b][b4764c7b]]
+impl State {
+    pub fn show_symmetry(&mut self, ui: &mut Ui) {
+        let radio = &mut self.settings.symmetry;
+        ui.horizontal(|ui| {
+            ui.selectable_value(radio, Symmetry::NoUseSym, "NoUseSym");
+            ui.selectable_value(radio, Symmetry::UseSym, "UseSym");
+        });
+    }
+}
+// b4764c7b ends here
 
 // [[file:../../ui-hack.note::866bc573][866bc573]]
 fn render_template<S: Serialize>(template: &str, settings: S) -> Option<String> {
@@ -186,6 +216,18 @@ impl State {
             ui.end_row();
         });
         self.show_charge_and_multiplicity(ui);
+        ui.collapsing("SCF", |ui| {
+            egui::Grid::new("orca_grid_misc")
+                .num_columns(2)
+                .spacing([40.0, 4.0])
+                .striped(true)
+                .show(ui, |ui| {
+                    self.show_scf_type(ui);
+                    ui.end_row();
+                    self.show_scf_convergence(ui);
+                    ui.end_row();
+                });
+        });
         ui.collapsing("Misc", |ui| {
             egui::Grid::new("orca_grid_misc")
                 .num_columns(2)
@@ -195,11 +237,10 @@ impl State {
                     ui.label("RI approximation:");
                     ui.add(egui::DragValue::new(&mut self.settings.charge).speed(1.0));
                     ui.end_row();
-                    ui.checkbox(&mut self.settings.use_symmetry, "Use Symmetry");
+                    ui.label("Symmetry:");
+                    self.show_symmetry(ui);
                     ui.end_row();
                     self.show_solvention(ui);
-                    ui.end_row();
-                    self.show_scf_type(ui);
                     ui.end_row();
                 });
         });

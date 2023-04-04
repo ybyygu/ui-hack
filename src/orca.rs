@@ -41,6 +41,12 @@ enum Symmetry {
     UseSym,
 }
 
+impl Default for Symmetry {
+    fn default() -> Self {
+        Self::NoUseSym
+    }
+}
+
 #[derive(Debug, PartialEq, Deserialize, Serialize, Sequence)]
 enum Method {
     PBE,
@@ -102,7 +108,7 @@ enum SCFType {
     RestrictedOpen,
 }
 
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Serialize, Sequence)]
 enum SCFConvergence {
     // Energy change 1.0e-09 au
     VeryTightSCF,
@@ -182,7 +188,7 @@ pub struct Settings {
     scf_convergence: Option<SCFConvergence>,
     solvation: Option<Solvation>,
     dft_grid: Option<DFTGrid>,
-    use_symmetry: bool,
+    symmetry: Symmetry,
 }
 
 pub use ui::State;
